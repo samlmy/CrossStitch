@@ -1,0 +1,97 @@
+---
+title: "A1_Vignette"
+author: "MIngyang Li"
+date: "11/4/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+First of all, to be able use the functions in the functions.R, the following 
+packages are required.
+```{r}
+library(imager)
+library(tidyverse)
+library(tidymodels)
+library(sp)
+library(scales)
+library(cowplot)
+devtools::install_github("sharlagelfand/dmc")
+library(dmc)
+```
+```{r}
+#After the above packages are successfully loaded, we can load our functions by
+#using the command below.
+source("functions.R")
+set.seed(1004931425)
+```
+The first function you need to use is process_image(). It takes an image file 
+name and a list of k as input. It is noteworthy that the function can be only 
+used on a JPEG or PNG file. The k_list is the list of numbers of colors that you
+decide for your cross-stitich pattern. For example, if we choose the k_list to 
+be c(2, 4, 6), then you are planing on to have two or four or six colors on your
+cross-stitich pattern.
+```{r}
+k_list <- c(2:8) # This means you are choosing between two to eight thread colors.
+cluster_info <- process_image("minion.jpg", k_list)
+```
+
+```{r}
+#The following command is only for illustrating the image.
+img <- load.image("minion.jpg")
+plot(img)
+```
+
+After process_image() is successfully executed, we will have all the information 
+stored in the cluster_info. To be specific, the cluster_info contains clustering 
+information for each k chosen in the list, the RGB values and hex values 
+of the original image, and the tidied clusters with their associated 
+RGB values and their nearest DMC thread colour hex values.
+```{r}
+cluster_info[[1]]
+```
+```{r}
+cluster_info[[2]]
+```
+```{r}
+cluster_info[[3]]
+```
+
+Then, we use scree_plot() to get a plot of total within cluster sum of squares 
+versus ks.
+```{r}
+scree_plot(cluster_info)
+```
+This scree plot helps us to decide the best k; in other words, the number of 
+thread colors we are going to use for the stitch pattern. This step is very 
+siginificant because we do not want similar colors, or not enough colors. A k 
+that is too large will not help us better illutrate the image in the cross-stitich 
+pattern. A small k will result in not enough thread colors to display the original 
+picture. According to the scree plot above, six will be a good choice because the 
+total with in cluster sum of squares stops to decrease as much.
+
+Next, the colour_strips() function simply demonstrates the DMC thread colors for 
+each k in the k_list.
+```{r}
+colour_strips(cluster_info)
+```
+
+Finally, we can plot the cross-stitich pattern by using the make_pattern() 
+function. The function takes in cluster_info, choice of k, and size of the 
+pattern as input. In addition, The function produce a colored pattern by default.
+You can add black_white = TRUE in the input to produce a black and white pattern. 
+You can also add a background_color = "the color you want" to change the 
+background color of the pattern.
+```{r}
+make_pattern(cluster_info, 6, 50)
+```
+```{r}
+make_pattern(cluster_info, 6, 50, black_white = TRUE)
+```
+```{r}
+make_pattern(cluster_info, 6, 50, background_colour = "yellow")
+```
+Unfortunately, the function cannot produce the pattern in the right matching DMC 
+thread colors and display the color name in the legend.
